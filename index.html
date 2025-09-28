@@ -1,379 +1,816 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Life-Line Creator - Intention by Design</title>
-    <style>
-        /* BASE STYLES (Kept as provided) */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Life-Line Creator - Intention by Design</title>
+  <style>
+    /* ========== BASE ========== */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #dbeafe 0%, #f3e8ff 50%, #fce7f3 100%);
+      min-height: 100vh; padding: 1rem;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    .header { text-align:center; margin-bottom:1.5rem; }
+    .title {
+      font-size:2.5rem; font-weight:bold;
+      background: linear-gradient(to right, #2563eb, #7c3aed);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip:text; margin-bottom:.5rem;
+    }
+    .subtitle { color:#4b5563; font-size:1.125rem; margin-bottom:.25rem; }
+    .description { color:#6b7280; font-size:.875rem; }
 
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #dbeafe 0%, #f3e8ff 50%, #fce7f3 100%);
-            min-height: 100vh;
-            padding: 1rem;
-        }
+    .main-container { background:#fff; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,.1); overflow:hidden; }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+    /* ========== TOOLBAR ========== */
+    .toolbar {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:.75rem 1rem; background:#f9fafb; border-bottom:1px solid #e5e7eb;
+    }
+    .toolbar-left,.toolbar-right { display:flex; gap:.5rem; align-items:center; }
+    .btn {
+      padding:.5rem .75rem; border-radius:8px; border:none; font-size:.875rem; font-weight:500;
+      cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:.5rem;
+    }
+    .btn:disabled { cursor:not-allowed; opacity:.5; }
+    .btn-blue{ background:#dbeafe; color:#1d4ed8; } .btn-blue:hover:not(:disabled){ background:#bfdbfe; }
+    .btn-red{ background:#fee2e2; color:#dc2626; } .btn-red:hover:not(:disabled){ background:#fecaca; }
+    .btn-gray{ background:#f3f4f6; color:#374151; } .btn-gray:hover:not(:disabled){ background:#e5e7eb; }
+    .btn-green{ background:#dcfce7; color:#16a34a; } .btn-green:hover:not(:disabled){ background:#bbf7d0; }
 
-        .header {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
+    /* ========== CONTENT & SIDEBAR ========== */
+    .content-area{ display:flex; }
+    .sidebar{
+      width:280px; background:#f9fafb; padding:1rem; border-right:1px solid #e5e7eb;
+      overflow-y:auto; max-height:600px;
+    }
+    .sidebar-section{ margin-bottom:1rem; }
+    .sidebar-label{ display:block; font-size:.875rem; font-weight:500; color:#374151; margin-bottom:.5rem; }
+    .tool-grid{ display:grid; grid-template-columns:1fr; gap:.5rem; }
+    .tool-btn{
+      width:100%; padding:.5rem .75rem; border-radius:8px; border:1px solid #e5e7eb;
+      background:#fff; color:#4b5563; font-size:.875rem; font-weight:500; cursor:pointer; transition:all .2s;
+      display:flex; align-items:center; gap:.5rem;
+    }
+    .tool-btn:hover:not(.active){ background:#f3f4f6; }
 
-        .title {
-            font-size: 2.5rem;
-            font-weight: bold;
-            background: linear-gradient(to right, #2563eb, #7c3aed);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
-        }
+    /* Active tool color variants */
+    .tool-btn.active.add-tool{ background:#3b82f6; color:#fff; border-color:#3b82f6; }
+    .tool-btn.active.move-tool{ background:#10b981; color:#fff; border-color:#10b981; }
 
-        .subtitle {
-            color: #4b5563;
-            font-size: 1.125rem;
-            margin-bottom: 0.25rem;
-        }
+    .color-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; }
+    .color-btn{
+      width:3rem; height:3rem; border-radius:8px; border:2px solid transparent; cursor:pointer; transition:transform .2s;
+    }
+    .color-btn.active{ transform:scale(1.1); border-color:#6b7280; box-shadow:0 0 5px rgba(0,0,0,.2); }
 
-        .description {
-            color: #6b7280;
-            font-size: 0.875rem;
-        }
+    .selected-controls{
+      background:#dbeafe; border:1px solid #bfdbfe; border-radius:8px; padding:.75rem;
+    }
+    .selected-title{ font-size:.875rem; font-weight:500; color:#1e40af; margin-bottom:.5rem; }
+    .size-controls,.thickness-controls{ display:flex; gap:.25rem; margin-bottom:.5rem; }
+    .size-btn,.thickness-btn{
+      width:2rem; height:2rem; border-radius:4px; border:1px solid #d1d5db; background:#fff;
+      color:#374151; font-size:.75rem; font-weight:500; cursor:pointer; transition:all .2s;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .size-btn.active,.thickness-btn.active{ background:#3b82f6; color:#fff; border-color:#3b82f6; }
+    .control-buttons{ display:flex; gap:.5rem; }
+    .coordinate-controls{ display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-bottom:.5rem; }
+    .coordinate-input{ padding:.25rem .5rem; border:1px solid #d1d5db; border-radius:4px; font-size:.75rem; text-align:center; }
+    .number-controls{ display:flex; gap:.25rem; }
+    .number-btn{ flex:1; padding:.25rem .5rem; border-radius:4px; border:1px solid #d1d5db; background:#fff; color:#374151; font-size:.75rem; font-weight:500; cursor:pointer; transition:all .2s; }
+    .number-btn.active{ background:#3b82f6; color:#fff; border-color:#3b82f6; }
+    .point-list{ max-height:150px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:6px; background:#fff; }
+    .point-item{ padding:.5rem; border-bottom:1px solid #f3f4f6; cursor:pointer; transition:background-color .2s; font-size:.875rem; }
+    .point-item.selected{ background:#dbeafe; border-left:3px solid #3b82f6; }
+    .point-preview{ width:12px; height:12px; border-radius:50%; display:inline-block; margin-right:.5rem; vertical-align:middle; }
+    .point-info{ display:flex; justify-content:space-between; align-items:center; }
 
-        .main-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
+    /* ========== CANVAS ========== */
+    .canvas-area{ flex:1; padding:1rem; }
+    .canvas-container{ border:2px dashed #d1d5db; border-radius:8px; overflow:hidden; }
+    #lifelineCanvas{ display:block; width:100%; height:auto; background:#fff; touch-action:none; }
+    .cursor-crosshair{ cursor:crosshair; }
+    .cursor-pointer{ cursor:pointer; }
+    .cursor-move{ cursor:move; }
 
-        /* TOOLBAR STYLES */
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
-        }
+    /* ========== MODAL ========== */
+    .hidden { display:none !important; } /* <-- Missing before */
+    .modal-overlay{
+      position:fixed; inset:0; background:rgba(0,0,0,.5);
+      display:flex; align-items:center; justify-content:center; z-index:1000;
+    }
+    .modal{
+      width:min(560px, 92vw); background:#fff; border-radius:10px; padding:1rem;
+      box-shadow:0 10px 25px rgba(0,0,0,.2);
+    }
+    .modal-title{ font-weight:700; margin-bottom:.75rem; }
+    .form-group{ margin:.75rem 0; }
+    .form-label{ display:block; font-size:.875rem; color:#374151; margin-bottom:.25rem; }
+    .form-input{
+      width:100%; padding:.5rem .75rem; border:1px solid #d1d5db; border-radius:8px; font-size:.95rem;
+    }
+    .style-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:.5rem; }
+    .style-btn{
+      width:100%; padding:.5rem .75rem; border-radius:8px; border:1px solid #e5e7eb;
+      background:#fff; color:#4b5563; font-size:.875rem; font-weight:500; cursor:pointer; transition:all .2s;
+      text-align:left;
+    }
+    .style-btn.active{ background:#eef2ff; border-color:#6366f1; color:#3730a3; }
+    .style-header{ display:flex; align-items:center; gap:.5rem; }
+    .style-icon{ font-weight:700; }
+    .style-description{ font-size:.75rem; color:#6b7280; }
+    .modal-buttons{ display:flex; justify-content:flex-end; gap:.5rem; margin-top:1rem; }
+    .modal-btn{ padding:.5rem .75rem; border-radius:8px; border:1px solid #d1d5db; background:#fff; cursor:pointer; }
+    .modal-btn-confirm{ background:#dcfce7; border-color:#86efac; }
+    .modal-element-hidden{ display:none !important; }
 
-        .toolbar-left, .toolbar-right {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-
-        .btn {
-            padding: 0.5rem 0.75rem;
-            border-radius: 8px;
-            border: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-
-        .btn-blue { background: #dbeafe; color: #1d4ed8; }
-        .btn-blue:hover:not(:disabled) { background: #bfdbfe; }
-        .btn-red { background: #fee2e2; color: #dc2626; }
-        .btn-red:hover:not(:disabled) { background: #fecaca; }
-        .btn-gray { background: #f3f4f6; color: #374151; }
-        .btn-gray:hover:not(:disabled) { background: #e5e7eb; }
-        .btn-green { background: #dcfce7; color: #16a34a; }
-        .btn-green:hover:not(:disabled) { background: #bbf7d0; }
-
-        /* CONTENT & SIDEBAR STYLES */
-        .content-area {
-            display: flex;
-        }
-
-        .sidebar {
-            width: 280px;
-            background: #f9fafb;
-            padding: 1rem;
-            border-right: 1px solid #e5e7eb;
-            overflow-y: auto;
-            max-height: 600px;
-        }
-
-        .sidebar-section {
-            margin-bottom: 1rem;
-        }
-
-        .sidebar-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 0.5rem;
-        }
-
-        .tool-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.5rem;
-        }
-
-        .tool-btn {
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-            background: white;
-            color: #4b5563;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        /* CORRECTED TOOL ACTIVE STATES */
-        .tool-btn.active.add-tool {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
-        }
-
-        .tool-btn.active.move-tool {
-            background: #10b981; 
-            color: white;
-            border-color: #10b981;
-        }
-
-        .tool-btn:hover:not(.active) {
-            background: #f3f4f6;
-        }
-
-        .color-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 0.5rem;
-        }
-
-        .color-btn {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 8px;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .color-btn.active {
-            transform: scale(1.1);
-            border-color: #6b7280;
-            box-shadow: 0 0 5px rgba(0,0,0,0.2);
-        }
-
-        /* SELECTED CONTROLS STYLES (Point editing sidebar) */
-        .selected-controls {
-            background: #dbeafe;
-            border: 1px solid #bfdbfe;
-            border-radius: 8px;
-            padding: 0.75rem;
-        }
-        
-        .selected-title {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #1e40af;
-            margin-bottom: 0.5rem;
-        }
-
-        .size-controls, .thickness-controls {
-            display: flex;
-            gap: 0.25rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .size-btn, .thickness-btn {
-            width: 2rem;
-            height: 2rem;
-            border-radius: 4px;
-            border: 1px solid #d1d5db;
-            background: white;
-            color: #374151;
-            font-size: 0.75rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .size-btn.active, .thickness-btn.active {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
-        }
-
-        .control-buttons {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .coordinate-controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .coordinate-input {
-            padding: 0.25rem 0.5rem;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            text-align: center;
-        }
-
-        .number-controls {
-            display: flex;
-            gap: 0.25rem;
-        }
-
-        .number-btn {
-            flex: 1;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            border: 1px solid #d1d5db;
-            background: white;
-            color: #374151;
-            font-size: 0.75rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .number-btn.active {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
-        }
-
-        .point-list {
-            max-height: 150px;
-            overflow-y: auto;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            background: white;
-        }
-
-        .point-item {
-            padding: 0.5rem;
-            border-bottom: 1px solid #f3f4f6;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            font-size: 0.875rem;
-        }
-
-        .point-item.selected {
-            background: #dbeafe;
-            border-left: 3px solid #3b82f6;
-        }
-
-        .point-preview {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 0.5rem;
-            vertical-align: middle;
-        }
-
-        .point-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* CANVAS STYLES */
-        .canvas-area {
-            flex: 1;
-            padding: 1rem;
-        }
-
-        .canvas-container {
-            border: 2px dashed #d1d5db;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        #lifelineCanvas {
-            display: block;
-            width: 100%;
-            height: auto;
-            background: white;
-            touch-action: none; 
-        }
-
-        .cursor-crosshair { cursor: crosshair; }
-        .cursor-pointer { cursor: pointer; } /* Added for 'move' mode when nothing is selected */
-        .cursor-move { cursor: move; }
-
-        /* MODAL STYLES */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .modal-element-hidden {
-            display: none !important;
-        }
-
-        /* MEDIA QUERIES (Kept as provided) */
-        @media (max-width: 768px) {
-            .content-area {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-            }
-            
-            .toolbar {
-                flex-direction: column;
-                gap: 0.5rem;
-                align-items: stretch;
-            }
-            
-            .toolbar-left, .toolbar-right {
-                justify-content: center;
-            }
-        }
-    </style>
+    /* ========== MEDIA ========== */
+    @media (max-width:768px){
+      .content-area{ flex-direction:column; }
+      .sidebar{ width:100%; }
+      .toolbar{ flex-direction:column; gap:.5rem; align-items:stretch; }
+      .toolbar-left,.toolbar-right{ justify-content:center; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h
+  <div class="container">
+    <div class="header">
+      <h1 class="title">Life-Line Creator</h1>
+      <p class="subtitle">From "Intention by Design" - Volume 1: Designing Your Life-Line</p>
+      <p class="description">Create an interactive visualization of your unique life journey</p>
+    </div>
+
+    <div class="main-container">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <button id="undoBtn" class="btn btn-blue" disabled><span>↶</span> Undo (<span id="undoCount">0</span>)</button>
+          <button id="clearBtn" class="btn btn-red"><span>🗑</span> Clear</button>
+        </div>
+        <div class="toolbar-right">
+          <button id="gridBtn" class="btn btn-gray"><span>👁</span> Grid</button>
+          <button id="saveBtn" class="btn btn-green"><span>💾</span> Save</button>
+        </div>
+      </div>
+
+      <div class="content-area">
+        <div class="sidebar">
+          <div class="sidebar-section">
+            <label class="sidebar-label">Tools</label>
+            <div class="tool-grid">
+              <button id="addTool" class="tool-btn active add-tool"><span>➕</span> Add Life Event</button>
+              <button id="moveTool" class="tool-btn move-tool"><span>✋</span> Select & Move Points</button>
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <label class="sidebar-label">All Points</label>
+            <div id="pointList" class="point-list">
+              <div class="point-item" style="text-align:center; color:#9ca3af; padding:1rem;">
+                No points yet. Click "Add Life Event" and click on the canvas.
+              </div>
+            </div>
+          </div>
+
+          <div id="selectedControls" class="sidebar-section selected-controls hidden">
+            <div class="selected-title">Point <span id="selectedPointNum">1</span> Selected</div>
+
+            <div>
+              <label class="form-label">Position (X, Y)</label>
+              <div class="coordinate-controls">
+                <input type="number" id="xCoord" class="coordinate-input" placeholder="X" min="20" max="780">
+                <input type="number" id="yCoord" class="coordinate-input" placeholder="Y" min="20" max="480">
+              </div>
+              <button id="applyCoords" class="btn btn-blue" style="width:100%; font-size:.75rem; padding:.25rem;">Apply Position</button>
+            </div>
+
+            <div>
+              <label class="form-label">Point Size</label>
+              <div class="size-controls">
+                <button class="size-btn" data-size="6">6</button>
+                <button class="size-btn" data-size="8">8</button>
+                <button class="size-btn" data-size="10">10</button>
+                <button class="size-btn" data-size="12">12</button>
+                <button class="size-btn" data-size="15">15</button>
+              </div>
+            </div>
+
+            <div>
+              <label class="form-label">Line Thickness</label>
+              <div class="thickness-controls">
+                <button class="thickness-btn" data-thickness="2">2</button>
+                <button class="thickness-btn" data-thickness="3">3</button>
+                <button class="thickness-btn" data-thickness="4">4</button>
+                <button class="thickness-btn" data-thickness="6">6</button>
+                <button class="thickness-btn" data-thickness="8">8</button>
+              </div>
+            </div>
+
+            <div class="control-buttons">
+              <button id="editPointBtn" class="btn btn-blue">Edit Details</button>
+              <button id="deletePointBtn" class="btn btn-red">Delete Point</button>
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <label class="sidebar-label">Event Numbers</label>
+            <div class="number-controls">
+              <button id="numbersOn" class="number-btn active">Show</button>
+              <button id="numbersOff" class="number-btn">Hide</button>
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <label class="sidebar-label">New Point Emotion Color</label>
+            <div class="color-grid">
+              <button class="color-btn active" style="background-color:#3B82F6" data-color="#3B82F6" title="Hope"></button>
+              <button class="color-btn" style="background-color:#10B981" data-color="#10B981" title="Growth"></button>
+              <button class="color-btn" style="background-color:#F59E0B" data-color="#F59E0B" title="Energy"></button>
+              <button class="color-btn" style="background-color:#EF4444" data-color="#EF4444" title="Passion"></button>
+              <button class="color-btn" style="background-color:#8B5CF6" data-color="#8B5CF6" title="Dreams"></button>
+              <button class="color-btn" style="background-color:#06B6D4" data-color="#06B6D4" title="Clarity"></button>
+              <button class="color-btn" style="background-color:#84CC16" data-color="#84CC16" title="Fresh Start"></button>
+              <button class="color-btn" style="background-color:#F97316" data-color="#F97316" title="C Courage"></button>
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <div class="instructions">
+              <div><strong>Add Mode:</strong> Click canvas to add life events</div>
+              <div><strong>Move Mode:</strong> Click to select points, drag to move</div>
+              <div id="selectedInstruction" class="hidden"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="canvas-area">
+          <div class="canvas-header">
+            <h3 class="canvas-title">Your Life Journey Canvas</h3>
+            <p id="canvasDescription" class="canvas-description">
+              Click anywhere to add a life event - you'll choose the connection style for the next segment
+            </p>
+          </div>
+
+          <div class="canvas-container">
+            <canvas id="lifelineCanvas" width="800" height="500"></canvas>
+          </div>
+
+          <div class="canvas-footer">
+            Life events: <span id="eventCount">0</span>
+            <div id="journeyMessage" class="hidden">Each point represents a meaningful chapter in your unique journey</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="eventModal" class="modal-overlay hidden">
+    <div class="modal">
+      <h3 id="modalTitle" class="modal-title">Add Life Event</h3>
+
+      <div class="form-group">
+        <label class="form-label">Event Description</label>
+        <input type="text" id="eventInput" class="form-input" placeholder="e.g., Started college, Got married, Career breakthrough...">
+      </div>
+
+      <div id="styleSelection" class="form-group">
+        <label class="form-label">Connection to Next Event</label>
+        <div class="style-grid">
+          <button class="style-btn active" data-style="solid">
+            <div class="style-header"><span class="style-icon">━</span><span class="style-name">Steady Progress</span></div>
+            <div class="style-description">Consistent, stable period</div>
+          </button>
+          <button class="style-btn" data-style="dashed">
+            <div class="style-header"><span class="style-icon">┅</span><span class="style-name">Uncertain Path</span></div>
+            <div class="style-description">Period of exploration or doubt</div>
+          </button>
+          <button class="style-btn" data-style="dotted">
+            <div class="style-header"><span class="style-icon">⋯</span><span class="style-name">Small Steps</span></div>
+            <div class="style-description">Gradual, methodical progress</div>
+          </button>
+          <button class="style-btn" data-style="zigzag">
+            <div class="style-header"><span class="style-icon">⚡</span><span class="style-name">Challenging Times</span></div>
+            <div class="style-description">Ups and downs, obstacles</div>
+          </button>
+          <button class="style-btn" data-style="curved">
+            <div class="style-header"><span class="style-icon">〜</span><span class="style-name">Flowing Growth</span></div>
+            <div class="style-description">Natural, organic development</div>
+          </button>
+          <button class="style-btn" data-style="knot">
+            <div class="style-header"><span class="style-icon">🪢</span><span class="style-name">Stuck/Trapped</span></div>
+            <div class="style-description">Being stuck in a difficult situation</div>
+          </button>
+          <button class="style-btn" data-style="rough">
+            <div class="style-header"><span class="style-icon">≈≈</span><span class="style-name">Turbulent Period</span></div>
+            <div class="style-description">Chaotic or difficult times</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-buttons">
+        <button id="modalCancel" class="modal-btn modal-btn-cancel">Cancel</button>
+        <button id="modalConfirm" class="modal-btn modal-btn-confirm">Add to Life-Line</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== State =====
+    let points = [];
+    let currentColor = '#3B82F6';
+    let showGrid = true;
+    let selectedTool = 'add';
+    let undoStack = [];
+    let selectedPoint = null;
+    let isDragging = false;
+    let dragOffset = { x:0, y:0 };
+    let pendingPoint = null;
+    let selectedLineStyle = 'solid';
+    let isEditingExistingPoint = false;
+    let editingPointIndex = null;
+    let showNumbers = true;
+    let gridSize = 10;
+
+    // ===== DOM =====
+    const canvas = document.getElementById('lifelineCanvas');
+    const ctx = canvas.getContext('2d');
+    const eventModal = document.getElementById('eventModal');
+    const eventInput = document.getElementById('eventInput');
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setupEventListeners();
+      redrawCanvas();
+    });
+
+    function setupEventListeners(){
+      // Tool buttons
+      document.getElementById('addTool').addEventListener('click', () => setTool('add'));
+      document.getElementById('moveTool').addEventListener('click', () => setTool('move'));
+
+      // Toolbar
+      document.getElementById('undoBtn').addEventListener('click', undo);
+      document.getElementById('clearBtn').addEventListener('click', clearCanvas);
+      document.getElementById('gridBtn').addEventListener('click', toggleGrid);
+      document.getElementById('saveBtn').addEventListener('click', saveCanvas);
+
+      // Colors
+      document.querySelectorAll('.color-btn').forEach(btn=>{
+        btn.addEventListener('click', ()=> setColor(btn.dataset.color));
+      });
+
+      // Canvas
+      canvas.addEventListener('click', handleCanvasClick);
+      canvas.addEventListener('mousedown', handleMouseDown);
+      canvas.addEventListener('mousemove', handleMouseMove);
+      canvas.addEventListener('mouseup', handleMouseUp);
+      canvas.addEventListener('mouseleave', handleMouseUp);
+      canvas.addEventListener('dblclick', handleDoubleClick); // now implemented
+
+      // Size / thickness
+      document.querySelectorAll('.size-btn').forEach(btn=>{
+        btn.addEventListener('click', ()=> resizeSelectedPoint(parseInt(btn.dataset.size)));
+      });
+      document.querySelectorAll('.thickness-btn').forEach(btn=>{
+        btn.addEventListener('click', ()=> setThicknessForSelectedPoint(parseInt(btn.dataset.thickness)));
+      });
+
+      // Point controls
+      document.getElementById('editPointBtn').addEventListener('click', editSelectedPoint);
+      document.getElementById('deletePointBtn').addEventListener('click', deleteSelectedPoint);
+
+      // Coordinates
+      document.getElementById('applyCoords').addEventListener('click', applyCoordinates);
+      document.getElementById('xCoord').addEventListener('keypress', e=>{ if(e.key==='Enter') applyCoordinates(); });
+      document.getElementById('yCoord').addEventListener('keypress', e=>{ if(e.key==='Enter') applyCoordinates(); });
+
+      // Numbers toggle
+      document.getElementById('numbersOn').addEventListener('click', ()=> toggleNumbers(true));
+      document.getElementById('numbersOff').addEventListener('click', ()=> toggleNumbers(false));
+
+      // Modal
+      document.getElementById('modalCancel').addEventListener('click', closeModal);
+      document.getElementById('modalConfirm').addEventListener('click', confirmEvent);
+
+      // Style selection
+      document.querySelectorAll('.style-btn').forEach(btn=>{
+        btn.addEventListener('click', ()=> setLineStyle(btn.dataset.style));
+      });
+
+      // Keyboard
+      document.addEventListener('keydown', handleKeyDown);
+      eventInput.addEventListener('keypress', e=>{ if(e.key==='Enter') confirmEvent(); });
+      eventModal.addEventListener('click', e=>{
+        if(e.target === eventModal) closeModal();
+      });
+    }
+
+    // ===== Utilities =====
+    function setTool(tool){
+      selectedTool = tool;
+      document.querySelectorAll('.tool-btn').forEach(btn=> btn.classList.remove('active','add-tool','move-tool'));
+      const toolBtn = document.getElementById(tool+'Tool');
+      if (toolBtn){
+        toolBtn.classList.add('active', tool+'-tool');
+      }
+      canvas.className = (tool==='add') ? 'cursor-crosshair' : (selectedPoint!==null ? 'cursor-move' : 'cursor-pointer');
+      document.getElementById('canvasDescription').textContent =
+        tool==='add'
+          ? "Click anywhere to add a life event - you'll choose the connection style for the next segment"
+          : (selectedPoint!==null ? 'Selected point highlighted. Drag the point to move or use sidebar coordinates.' : 'Click any point to select it, or choose from the point list in the sidebar');
+      updateSelectedControls();
+    }
+
+    function setColor(color){
+      currentColor = color;
+      document.querySelectorAll('.color-btn').forEach(b=> b.classList.remove('active'));
+      const btn = document.querySelector(`.color-grid [data-color="${CSS.escape(color)}"]`);
+      if (btn) btn.classList.add('active');
+    }
+
+    function setLineStyle(style){
+      selectedLineStyle = style;
+      document.querySelectorAll('.style-btn').forEach(b=> b.classList.remove('active'));
+      const btn = document.querySelector(`.style-grid [data-style="${CSS.escape(style)}"]`);
+      if (btn) btn.classList.add('active');
+    }
+
+    function saveStateToUndo(){
+      const snapshot = JSON.stringify(points);
+      const last = undoStack.length ? JSON.stringify(undoStack[undoStack.length-1]) : null;
+      if (snapshot !== last){
+        undoStack.push(JSON.parse(snapshot));
+        if (undoStack.length>10) undoStack.shift();
+        updateUndoButton();
+      }
+    }
+    function updateUndoButton(){
+      const btn = document.getElementById('undoBtn');
+      const cnt = document.getElementById('undoCount');
+      btn.disabled = undoStack.length===0;
+      cnt.textContent = undoStack.length;
+    }
+
+    function updateSelectedControls(){
+      const controls = document.getElementById('selectedControls');
+      const instruction = document.getElementById('selectedInstruction');
+      if (selectedTool==='move' && selectedPoint!==null){
+        controls.classList.remove('hidden');
+        document.getElementById('selectedPointNum').textContent = selectedPoint+1;
+        const p = points[selectedPoint];
+        document.getElementById('xCoord').value = Math.round(p.x);
+        document.getElementById('yCoord').value = Math.round(p.y);
+        // active buttons
+        document.querySelectorAll('.size-btn').forEach(b=> b.classList.toggle('active', parseInt(b.dataset.size)===(p.size||8)));
+        document.querySelectorAll('.thickness-btn').forEach(b=> b.classList.toggle('active', parseInt(b.dataset.thickness)===(p.thickness||4)));
+        if (instruction){ instruction.classList.remove('hidden'); instruction.textContent = `Point ${selectedPoint+1} selected - use controls above to edit`; }
+      } else {
+        controls.classList.add('hidden');
+        if (instruction) instruction.classList.add('hidden');
+      }
+    }
+
+    function selectPointByIndex(i){
+      selectedPoint = i;
+      if (selectedTool==='move'){
+        canvas.className = (selectedPoint!==null) ? 'cursor-move' : 'cursor-pointer';
+      }
+      updateSelectedControls();
+      updateMoveDescription();
+      updatePointList();
+      redrawCanvas();
+    }
+
+    // ===== Drawing =====
+    function drawLine(start,end,style){
+      ctx.beginPath();
+      switch(style){
+        case 'solid': ctx.setLineDash([]); ctx.moveTo(start.x,start.y); ctx.lineTo(end.x,end.y); break;
+        case 'dashed': ctx.setLineDash([15,10]); ctx.moveTo(start.x,start.y); ctx.lineTo(end.x,end.y); break;
+        case 'dotted': ctx.setLineDash([4,8]); ctx.moveTo(start.x,start.y); ctx.lineTo(end.x,end.y); break;
+        case 'zigzag': ctx.setLineDash([]); drawZigzag(start,end); break;
+        case 'curved': ctx.setLineDash([]); drawCurvedLine(start,end); break;
+        case 'knot':   ctx.setLineDash([]); drawKnotLine(start,end); break;
+        case 'rough':  ctx.setLineDash([]); drawRoughLine(start,end); break;
+      }
+      ctx.stroke();
+      ctx.setLineDash([]); // reset
+    }
+
+    function drawZigzag(start,end){
+      const segments=10, dx=(end.x-start.x)/segments, dy=(end.y-start.y)/segments, amp=12;
+      ctx.moveTo(start.x,start.y);
+      for(let i=1;i<=segments;i++){
+        const x=start.x+dx*i, baseY=start.y+dy*i, ang=Math.atan2(end.y-start.y,end.x-start.x);
+        const offset=(i%2===0?1:-1)*amp;
+        const zx=x+offset*Math.sin(ang), zy=baseY-offset*Math.cos(ang);
+        ctx.lineTo(zx,zy);
+      }
+    }
+    function drawCurvedLine(start,end){
+      const midX=(start.x+end.x)/2, midY=(start.y+end.y)/2;
+      const ang=Math.atan2(end.y-start.y,end.x-start.x), off=40;
+      const cx=midX+off*Math.sin(ang), cy=midY-off*Math.cos(ang);
+      ctx.moveTo(start.x,start.y); ctx.quadraticCurveTo(cx,cy,end.x,end.y);
+    }
+    function drawKnotLine(start,end){
+      const segments=6, dx=(end.x-start.x)/segments, dy=(end.y-start.y)/segments, r=10;
+      ctx.moveTo(start.x,start.y);
+      for(let i=1;i<=segments;i++){
+        const bx=start.x+dx*i, by=start.y+dy*i;
+        if(i===3){ ctx.arc(bx,by,r,0,Math.PI*2,false); ctx.moveTo(bx+r,by); }
+        else ctx.lineTo(bx,by);
+      }
+      ctx.lineTo(end.x,end.y);
+    }
+    function drawRoughLine(start,end){
+      const segments=25, dx=(end.x-start.x)/segments, dy=(end.y-start.y)/segments;
+      ctx.moveTo(start.x,start.y);
+      for(let i=1;i<=segments;i++){
+        const x=start.x+dx*i+(Math.random()-0.5)*10;
+        const y=start.y+dy*i+(Math.random()-0.5)*10;
+        ctx.lineTo(x,y);
+      }
+    }
+
+    function redrawCanvas(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      if (showGrid){
+        ctx.strokeStyle='#F3F4F6'; ctx.lineWidth=.5;
+        for(let i=0;i<=canvas.width;i+=gridSize){ ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+        for(let i=0;i<=canvas.height;i+=gridSize){ ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
+
+        ctx.strokeStyle='#E5E7EB'; ctx.lineWidth=1;
+        for(let i=0;i<=canvas.width;i+=50){ ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+        for(let i=0;i<=canvas.height;i+=50){ ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
+      }
+
+      if (points.length>1){
+        for(let i=0;i<points.length-1;i++){
+          const cur=points[i], next=points[i+1];
+          ctx.strokeStyle=cur.color; ctx.lineWidth=cur.thickness||4;
+          drawLine(cur,next,cur.nextLineStyle||'solid');
+        }
+      }
+
+      points.forEach((p,idx)=>{
+        const isSel = selectedPoint===idx, size=p.size||8;
+
+        if (isSel){
+          const box=24; ctx.strokeStyle='#3B82F6'; ctx.lineWidth=2; ctx.setLineDash([4,4]);
+          ctx.strokeRect(p.x-box/2, p.y-box/2, box, box); ctx.setLineDash([]);
+        }
+
+        ctx.fillStyle='rgba(0,0,0,.1)'; ctx.beginPath(); ctx.arc(p.x+2,p.y+2,size,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle=p.color; ctx.beginPath(); ctx.arc(p.x,p.y,size,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#FFFFFF'; ctx.beginPath(); ctx.arc(p.x,p.y,size*.5,0,Math.PI*2); ctx.fill();
+
+        if (p.label){
+          ctx.fillStyle = isSel ? '#3B82F6' : '#374151';
+          ctx.font = isSel ? 'bold 13px system-ui' : 'bold 12px system-ui';
+          const w = ctx.measureText(p.label).width;
+          let lx = p.x + 15, ly = p.y - 15;
+          if (lx + w > canvas.width - 10) lx = p.x - w - 15;
+          if (ly < 20) ly = p.y + 25;
+          ctx.fillText(p.label, lx, ly);
+        }
+
+        if (showNumbers){
+          ctx.fillStyle='#6B7280'; ctx.font='bold 10px system-ui'; ctx.textAlign='center';
+          ctx.fillText((idx+1).toString(), p.x, p.y+2); ctx.textAlign='left';
+        }
+
+        if (idx===0){
+          ctx.fillStyle='#059669'; ctx.font='bold 11px system-ui'; ctx.fillText('START', p.x-20, p.y-30);
+        }
+        if (idx===points.length-1 && points.length>1){
+          ctx.fillStyle='#DC2626'; ctx.font='bold 11px system-ui'; ctx.fillText('NOW', p.x-15, p.y-30);
+        }
+      });
+
+      updateEventCount();
+      updatePointList();
+    }
+
+    // ===== Canvas Interaction =====
+    function getPointIndexAtCoords(x,y){
+      for (let i=0;i<points.length;i++){
+        const p=points[i], d=Math.hypot(x-p.x, y-p.y);
+        if (d <= (p.size||8)+5) return i;
+      }
+      return null;
+    }
+
+    function handleCanvasClick(e){
+      const rect=canvas.getBoundingClientRect();
+      const x=e.clientX-rect.left, y=e.clientY-rect.top;
+
+      if (selectedTool==='add'){
+        // get currently active style if any
+        const activeStyleBtn = document.querySelector('.style-grid .style-btn.active');
+        selectedLineStyle = activeStyleBtn ? activeStyleBtn.dataset.style : 'solid';
+
+        pendingPoint = { x, y };
+        isEditingExistingPoint = false;
+        openModal(false);
+      } else {
+        const i = getPointIndexAtCoords(x,y);
+        if (i!==null && !isDragging) selectPointByIndex(i);
+        else selectPointByIndex(null);
+      }
+    }
+
+    function handleMouseDown(e){
+      if (selectedTool!=='move') return;
+      e.preventDefault();
+      const rect=canvas.getBoundingClientRect();
+      const x=e.clientX-rect.left, y=e.clientY-rect.top;
+      const i=getPointIndexAtCoords(x,y);
+      if (i!==null){
+        if (selectedPoint!==i) selectPointByIndex(i);
+        isDragging=true; dragOffset = { x: x - points[i].x, y: y - points[i].y };
+        canvas.className='cursor-move';
+      }
+    }
+
+    function handleMouseMove(e){
+      if (!isDragging || selectedPoint===null) return;
+      e.preventDefault();
+      const rect=canvas.getBoundingClientRect();
+      const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+      const nx=Math.max(20, Math.min(canvas.width-20, mx-dragOffset.x));
+      const ny=Math.max(20, Math.min(canvas.height-20, my-dragOffset.y));
+      points[selectedPoint].x = nx; points[selectedPoint].y = ny;
+      document.getElementById('xCoord').value = Math.round(nx);
+      document.getElementById('yCoord').value = Math.round(ny);
+      redrawCanvas();
+    }
+
+    function handleMouseUp(){
+      if (isDragging && selectedPoint!==null) saveStateToUndo();
+      isDragging=false; dragOffset={x:0,y:0};
+      canvas.className = (selectedTool==='move') ? (selectedPoint!==null ? 'cursor-move' : 'cursor-pointer') : 'cursor-crosshair';
+    }
+
+    // Implemented to prevent ReferenceError
+    function handleDoubleClick(e){
+      // Simple UX: double-click deselects in move mode; adds new in add mode.
+      const rect=canvas.getBoundingClientRect();
+      const x=e.clientX-rect.left, y=e.clientY-rect.top;
+      if (selectedTool==='move'){
+        selectPointByIndex(null);
+      } else {
+        pendingPoint = { x, y }; isEditingExistingPoint=false;
+        openModal(false);
+      }
+    }
+
+    // ===== Edit / Delete / Coords =====
+    function resizeSelectedPoint(s){ if(selectedPoint!==null){ saveStateToUndo(); points[selectedPoint].size=s; updateSelectedControls(); redrawCanvas(); } }
+    function setThicknessForSelectedPoint(t){ if(selectedPoint!==null){ saveStateToUndo(); points[selectedPoint].thickness=t; updateSelectedControls(); redrawCanvas(); } }
+
+    function editSelectedPoint(){
+      if (selectedPoint===null) return;
+      const p=points[selectedPoint];
+      const isLast = selectedPoint===points.length-1;
+
+      pendingPoint = { x:p.x, y:p.y };
+      eventInput.value = p.label || '';
+      selectedLineStyle = p.nextLineStyle || 'solid';
+      isEditingExistingPoint = true; editingPointIndex = selectedPoint;
+
+      document.querySelectorAll('.style-btn').forEach(b=> b.classList.remove('active'));
+      const btn = document.querySelector(`.style-grid [data-style="${CSS.escape(selectedLineStyle)}"]`);
+      if (btn) btn.classList.add('active');
+
+      openModal(true, isLast);
+    }
+
+    function deleteSelectedPoint(){
+      if (selectedPoint!==null && confirm('Delete this event?')){
+        saveStateToUndo(); points.splice(selectedPoint,1); selectPointByIndex(null);
+      }
+    }
+
+    function applyCoordinates(){
+      if (selectedPoint===null) return;
+      const xi = document.getElementById('xCoord'), yi=document.getElementById('yCoord');
+      const nx=parseInt(xi.value,10), ny=parseInt(yi.value,10);
+      if (isNaN(nx)||isNaN(ny)){ alert('Please enter valid numbers for X and Y'); return; }
+      const cx=Math.max(20, Math.min(canvas.width-20, nx));
+      const cy=Math.max(20, Math.min(canvas.height-20, ny));
+      if (cx!==nx || cy!==ny){ xi.value=cx; yi.value=cy; alert('Coordinates adjusted to fit within canvas (X:20–780, Y:20–480)'); }
+      saveStateToUndo(); points[selectedPoint].x=cx; points[selectedPoint].y=cy; updatePointList(); redrawCanvas();
+    }
+
+    // ===== Modal =====
+    function openModal(editing=false, isLast=false){
+      eventModal.classList.remove('hidden');
+      document.getElementById('modalTitle').textContent = editing ? 'Edit Life Event' : 'Add Life Event';
+      document.getElementById('modalConfirm').textContent = editing ? 'Update Event' : 'Add to Life-Line';
+      document.getElementById('styleSelection').classList.toggle('modal-element-hidden', !!isLast);
+      eventInput.focus();
+    }
+    function closeModal(){
+      eventModal.classList.add('hidden');
+      eventInput.value=''; selectedLineStyle='solid'; pendingPoint=null; isEditingExistingPoint=false; editingPointIndex=null;
+      document.querySelectorAll('.style-btn').forEach(b=> b.classList.remove('active'));
+      const def=document.querySelector('[data-style="solid"]'); if (def) def.classList.add('active');
+    }
+    function confirmEvent(){
+      if (!pendingPoint){ closeModal(); return; }
+      saveStateToUndo();
+      if (isEditingExistingPoint){
+        const p=points[editingPointIndex];
+        p.label = eventInput.value.trim();
+        if (editingPointIndex < points.length - 1){ p.nextLineStyle = selectedLineStyle; }
+      } else {
+        const newPoint = {
+          x: pendingPoint.x, y: pendingPoint.y, color: currentColor,
+          size:8, thickness:4, label:(eventInput.value.trim() || `Event ${points.length+1}`),
+          nextLineStyle: selectedLineStyle, id: Date.now()
+        };
+        points.push(newPoint);
+        selectPointByIndex(points.length-1);
+      }
+      redrawCanvas(); closeModal();
+    }
+
+    // ===== Lists / Misc =====
+    function updatePointList(){
+      const list = document.getElementById('pointList');
+      if (points.length===0){
+        list.innerHTML = '<div class="point-item" style="text-align:center; color:#9ca3af; padding:1rem;">No points yet. Click "Add Life Event" and click on the canvas.</div>';
+        return;
+      }
+      list.innerHTML = '';
+      points.forEach((p,i)=>{
+        const el=document.createElement('div');
+        el.className = `point-item ${selectedPoint===i?'selected':''}`;
+        el.innerHTML = `
+          <div class="point-info">
+            <div><span class="point-preview" style="background-color:${p.color}"></span><span>${p.label || `Event ${i+1}`}</span></div>
+            <span class="point-coords">(${Math.round(p.x)}, ${Math.round(p.y)})</span>
+          </div>`;
+        el.addEventListener('click', ()=> selectPointByIndex(i));
+        list.appendChild(el);
+      });
+    }
+    function updateEventCount(){
+      document.getElementById('eventCount').textContent = points.length;
+      const msg=document.getElementById('journeyMessage');
+      if (points.length>0) msg.classList.remove('hidden'); else msg.classList.add('hidden');
+    }
+    function updateMoveDescription(){
+      if (selectedTool!=='move') return;
+      const desc=document.getElementById('canvasDescription');
+      desc.textContent = selectedPoint!==null
+        ? 'Selected point highlighted. Drag the point to move or use sidebar coordinates.'
+        : 'Click any point to select it, or choose from the point list in the sidebar';
+    }
+
+    // ===== Global Actions =====
+    function undo(){
+      if (undoStack.length>0){
+        points = undoStack.pop();
+        selectPointByIndex(null);
+        updateUndoButton();
+        redrawCanvas();
+      }
+    }
+    function clearCanvas(){
+      if (points.length>0 && confirm('Clear all points?')){
+        saveStateToUndo(); points=[]; selectPointByIndex(null); redrawCanvas();
+      }
+    }
+    function toggleGrid(){
+      showGrid=!showGrid;
+      document.getElementById('gridBtn').innerHTML = showGrid ? '<span>👁</span> Grid' : '<span>🚫</span> Grid';
+      redrawCanvas();
+    }
+    function toggleNumbers(show){
+      showNumbers=show;
+      document.getElementById('numbersOn').classList.toggle('active', show);
+      document.getElementById('numbersOff').classList.toggle('active', !show);
+      redrawCanvas();
+    }
+    function handleKeyDown(e){
+      // simple shortcuts: Esc closes modal, Delete deletes selected
+      if (e.key==='Escape') closeModal();
+      if (e.key==='Delete' && selectedPoint!==null) deleteSelectedPoint();
+    }
+    function saveCanvas(){
+      const link=document.createElement('a');
+      link.download='my-lifeline.png';
+      link.href=canvas.toDataURL('image/png', 1.0);
+      link.click();
+    }
+  </script>
+</body>
+</html>
